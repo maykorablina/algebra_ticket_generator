@@ -37,7 +37,7 @@ def split_penultimate_period(text):
         try:
             return parts[0].split(".", 1)[1].split(".", 1)[0]
         except:
-            return ""
+            return "1"
     return text
 
 definitions_text = extract_text_from_pdf('definitions_list.pdf', 0)
