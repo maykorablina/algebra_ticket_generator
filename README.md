@@ -25,7 +25,7 @@ Welcome to генератор билетов для колока по алгеб
 3. Активируйте виртуальное окружение:
    - На Windows:
      ```sh
-     .venv\Scripts\activate
+     .venv/Scripts/activate
      ```
    - На macOS и Linux:
      ```sh
