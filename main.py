@@ -45,8 +45,17 @@ statements = statements_text.split('\n')[5:]
 definitions = [clean_text(d) for d in definitions]
 statements = [clean_text(s) for s in statements]
 
+def extract_with_label(text, label):
+    if label in text:
+        before, after = text.split(label, 1)
+        return f"{before.strip()} ({label}{after.strip()})"
+    return text.strip()
+
 clean_definitions = [d.split('.', 1)[-1].strip().split(' Definition')[0].split('.')[0] for d in definitions]
 clean_statements = [s.split('.', 1)[-1].strip().split(' Claim')[0].split('.')[0] for s in statements]
+
+# Remove statements that are just numbers
+clean_statements = [stmt for stmt in clean_statements if not stmt.isdigit()]
 
 simple_statements = [
     "There is at most one neutral element for a binary operation",
