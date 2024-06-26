@@ -3,14 +3,10 @@ from PyPDF2 import PdfReader
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-
-def extract_text_from_pdf(pdf_path):
+def extract_text_from_pdf(pdf_path, page_number):
     reader = PdfReader(pdf_path)
-    text = ''
-    for page in reader.pages:
-        text += page.extract_text()
+    text = reader.pages[page_number].extract_text()
     return text
-
 
 def clean_text(text):
     replacements = {
@@ -35,76 +31,68 @@ def clean_text(text):
         text = text.replace(old, new)
     return text
 
+def split_penultimate_period(text):
+    parts = text.rsplit('.', 2)
+    if len(parts) >= 2:
+        try:
+            return parts[0].split(".", 1)[1].split(".", 1)[0]
+        except:
+            return ""
+    return text
 
-definitions_text = extract_text_from_pdf('definitions_list.pdf')
-statements_text = extract_text_from_pdf('question_list.pdf')
+definitions_text = extract_text_from_pdf('definitions_list.pdf', 0)
+statements_text = extract_text_from_pdf('definitions_list.pdf', 1)
+proofs_text = extract_text_from_pdf('question_list.pdf', 0)
 
 definitions = definitions_text.split('\n')[5:]
 statements = statements_text.split('\n')[5:]
+proofs = proofs_text.split('\n')[5:]
 
 definitions = [clean_text(d) for d in definitions]
 statements = [clean_text(s) for s in statements]
+proofs = [clean_text(p) for p in proofs]
 
-def extract_with_label(text, label):
-    if label in text:
-        before, after = text.split(label, 1)
-        return f"{before.strip()} ({label}{after.strip()})"
-    return text.strip()
+clean_definitions = [split_penultimate_period(d) for d in definitions]
+clean_statements = [split_penultimate_period(s) for s in statements]
+clean_proofs = [split_penultimate_period(p) for p in proofs]
 
-clean_definitions = [d.split('.', 1)[-1].strip().split(' Definition')[0].split('.')[0] for d in definitions]
-clean_statements = [s.split('.', 1)[-1].strip().split(' Claim')[0].split('.')[0] for s in statements]
+clean_definitions = [x for x in clean_definitions if x.isdigit() == 0]
+clean_statements = [x for x in clean_statements if x.isdigit() == 0]
+clean_proofs = [x for x in clean_proofs if x.isdigit() == 0]
+for i in range(len(clean_statements)):
+    if clean_statements[i] == 'Cryptography':
+        clean_statements[i] = 'Cryptography. Describe Diffie-Hellman communication process'
 
-# Remove statements that are just numbers
-clean_statements = [stmt for stmt in clean_statements if not stmt.isdigit()]
-
-simple_statements = [
+simple_proof_list = [
     "There is at most one neutral element for a binary operation",
     "There is at most one inverse for an associative binary operation",
     "Properties of powers in a group",
     "Classification of cyclic groups",
     "Subgroups of the group Z",
     "Subgroups of the group Zn",
-    "Equivalent definitions of a normal subgroup",
-    "Relation between cosets of a group",
     "Number of elements in a coset",
     "Formulas for the number of cosets",
-    "The relation between the order of an element the order of a group",
+    "The relation between the order of an element and the order of a group",
     "A group of a prime order",
     "The Fermat Little Theorem",
     "A homomorphism of groups preserves the identity and the inverses",
     "Properties of the kernel of a group homomorphism",
     "Properties of the image of a group homomorphism",
-    "The Additive Chinese Remainder Theorem for integers",
-    "The Multiplicative Chinese Remainder Theorem for integers",
     "Ideals of the ring Z",
-    "Ideals of the ring Zn",
-    "Properties of the kernel of a ring homomorphism",
-    "Properties of the image of a ring homomorphism",
-    "Ideals of the polynomial ring in one variable",
-    "Expression of gcd as a linear combination of given polynomials",
-    "Ideals of a ring of polynomial remainders",
-    "The Chinese Remainder Theorem for the ring of polynomial remainders",
-    "Options for the characteristic of a field",
-    "When a ring of integer remainders is a field",
-    "Number of elements of a finite field",
-    "Structure of the multiplicative group of a finite field",
-    "Property of a descending chain of monomials",
+    "Number of elements of a finite field"
 ]
 
-interesting_statements = [
-    stmt for stmt in clean_statements if stmt not in simple_statements
-]
+simple_proofs = [p for p in clean_proofs if any(simple in p for simple in simple_proof_list)]
+interesting_proofs = [p for p in clean_proofs if p not in simple_proofs]
 
-
-def generate_exam_ticket(definitions, simple_statements, interesting_statements):
+def generate_exam_ticket(definitions, clean_statements, simple_proofs, interesting_proofs):
     ticket = {
         'definitions': random.sample(definitions, 4),
         'statements': random.sample(clean_statements, 2),
-        'simple_proof': random.choice(simple_statements),
-        'interesting_proof': random.choice(interesting_statements)
+        'simple_proof': random.choice(simple_proofs),
+        'interesting_proof': random.choice(interesting_proofs)
     }
     return ticket
-
 
 def create_pdf(ticket, filename='exam_ticket.pdf'):
     c = canvas.Canvas(filename, pagesize=letter)
@@ -140,8 +128,7 @@ def create_pdf(ticket, filename='exam_ticket.pdf'):
 
     c.save()
 
-
-ticket = generate_exam_ticket(clean_definitions, simple_statements, interesting_statements)
+ticket = generate_exam_ticket(clean_definitions, clean_statements, simple_proofs, interesting_proofs)
 create_pdf(ticket)
 
 print("Exam ticket generated and saved as 'exam_ticket.pdf'.")
