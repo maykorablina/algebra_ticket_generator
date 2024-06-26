@@ -18,7 +18,7 @@ def clean_text(text):
         "UFD": "Unique Factorization Domain",
         "fi": "fi",
         "Fi": "Fi",
-        "ﬃ": "ffi",  # common ligatures
+        "ﬃ": "ffi",
         "ﬀ": "ff",
         "ﬁ": "fi",
         "ﬂ": "fl",
