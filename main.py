@@ -16,17 +16,31 @@ def clean_text(text):
     replacements = {
         "�": "",
         "UFD": "Unique Factorization Domain",
+        "fi": "fi",
+        "Fi": "Fi",
+        "ﬃ": "ffi",  # common ligatures
+        "ﬀ": "ff",
+        "ﬁ": "fi",
+        "ﬂ": "fl",
+        "ﬂ": "fl",
+        "ﬂ": "fl",
+        "ﬀ": "ff",
+        "ﬂ": "fl",
+        "ﬃ": "ffi",
+        "ﬄ": "ffl",
+        "ﬅ": "st",
+        "ﬆ": "st",
     }
     for old, new in replacements.items():
         text = text.replace(old, new)
     return text
 
 
-definitions_text = extract_text_from_pdf('/mnt/data/definitions_list.pdf')
-statements_text = extract_text_from_pdf('/mnt/data/question_list.pdf')
+definitions_text = extract_text_from_pdf('definitions_list.pdf')
+statements_text = extract_text_from_pdf('question_list.pdf')
 
-definitions = definitions_text.split('\n')[5:]  # Adjusted to skip headers
-statements = statements_text.split('\n')[5:]  # Adjusted to skip headers
+definitions = definitions_text.split('\n')[5:]
+statements = statements_text.split('\n')[5:]
 
 definitions = [clean_text(d) for d in definitions]
 statements = [clean_text(s) for s in statements]
